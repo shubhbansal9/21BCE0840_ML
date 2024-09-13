@@ -1,9 +1,21 @@
-import pinecone
+import os
+from pinecone import Pinecone, ServerlessSpec
 from app.core.config import settings
 
 def connect_to_pinecone():
-    pinecone.init(api_key=settings.PINECONE_API_KEY)
-    pinecone.Index(settings.PINECONE_INDEX_NAME)
+    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-def close_pinecone_connection():
-    pinecone.deinit()
+    if settings.PINECONE_INDEX_NAME not in pc.list_indexes().names():
+        pc.create_index(
+            name=settings.PINECONE_INDEX_NAME, 
+            dimension=384,  
+            metric='cosine', 
+            spec=ServerlessSpec(
+                cloud='aws',
+                region='us-east-1'
+            )
+        )
+    return pc
+
+def close_pinecone_connection(pc):
+    pc.deinit()
