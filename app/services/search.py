@@ -2,7 +2,11 @@ import os
 from pinecone import Pinecone, ServerlessSpec
 from app.services.encoder import encode_text
 from app.core.config import settings
+import logging
+from app.services.encoder import encode_text
 
+# Set up logging
+logger = logging.getLogger(__name__)
 # Initialize Pinecone using the new method
 pc = Pinecone(api_key=settings.PINECONE_API_KEY)
 
@@ -26,14 +30,14 @@ async def search_documents(query: str, top_k: int, threshold: float):
 
     # Encode the query text into a vector
     query_vector = encode_text(query)
-
+    
     # Perform the search with keyword arguments (not positional)
     results = index.query(
         vector=query_vector,  # The vector to search
         top_k=top_k,          # The number of top results to retrieve
         include_metadata=True  # Include metadata in the response
     )
-
+    logger.debug(f"Pinecone query results: {results}")
     # Filter the results based on the threshold score
     filtered_results = [
         {
@@ -44,5 +48,6 @@ async def search_documents(query: str, top_k: int, threshold: float):
         for match in results["matches"]
         if match["score"] >= threshold  # Filter results by threshold
     ]
+    logger.debug(f"Filtered results: {filtered_results}")
 
     return filtered_results

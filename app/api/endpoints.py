@@ -22,27 +22,25 @@ async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mong
     logger.debug(f"DB object type: {type(db)}")
     logger.debug(f"Search query received: {query.dict()}")
 
-    # Check user rate limit
+
     user_id = query.user_id
     try:
-        # Convert user_id to ObjectId if it's not already
         if not isinstance(user_id, ObjectId):
             logger.debug(f"Converting user_id to ObjectId: {user_id}")
             user_id = ObjectId(user_id)
 
-        # Access the users collection directly
         user = await db.users.find_one({"_id": user_id})
         logger.debug(f"User found: {user}")
 
         if user is None:
             logger.warning(f"User not found: {user_id}")
-            # You might want to create a new user here, or handle this case differently
+            
             user = {"_id": user_id, "request_count": 0}
             logger.debug(f"Creating new user entry: {user}")
 
-        # if user.get("request_count", 0) >= 5:
-        #     logger.warning(f"Rate limit exceeded for user: {user_id}")
-        #     raise HTTPException(status_code=429, detail="Rate limit exceeded")
+        if user.get("request_count", 0) >= 5:
+            logger.warning(f"Rate limit exceeded for user: {user_id}")
+            raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
         # Increment user request count
         result = await db.users.update_one(

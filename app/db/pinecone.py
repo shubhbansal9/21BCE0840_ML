@@ -15,7 +15,7 @@ def connect_to_pinecone():
                 region='us-east-1'
             )
         )
-    return pc
+    return pc.Index(settings.PINECONE_INDEX_NAME) 
 
 def close_pinecone_connection(pc):
     pc.deinit()
