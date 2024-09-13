@@ -7,7 +7,6 @@ class SearchQuery(BaseModel):
     threshold: float = 0.5
     user_id: str
 
-class SearchResult(BaseModel):
-    id: str
-    content: str
-    score: float
+class SearchResponse(BaseModel):
+    results: List[dict]
+    inference_time: float

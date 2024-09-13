@@ -1,34 +1,19 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import router
+from fastapi import FastAPI
+from app.api.endpoints import router as api_router
 from app.core.config import settings
-from app.core.logging import setup_logging
-from app.scraper.scheduler import start_scheduler
-from app.db.pinecone import init_pinecone
+from app.db.mongodb import connect_to_mongo, close_mongo_connection
+from app.db.pinecone import connect_to_pinecone, close_pinecone_connection
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Include API router
-app.include_router(router)
-
-# Setup logging
-logger = setup_logging()
-
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Starting up the application")
-    init_pinecone()
-    start_scheduler()
+    await connect_to_mongo()
+    connect_to_pinecone()
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_mongo_connection()
+    close_pinecone_connection()
+
+app.include_router(api_router)

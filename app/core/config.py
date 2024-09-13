@@ -2,10 +2,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Document Retrieval System"
-    MONGO_URI: str
+    MONGODB_URL: str
     PINECONE_API_KEY: str
-    REDIS_HOST: str
-    REDIS_PORT: int
+    PINECONE_INDEX_NAME: str
+    REDIS_URL: str
 
     class Config:
         env_file = ".env"

@@ -1,11 +1,16 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 
-client = AsyncIOMotorClient(settings.MONGO_URI)
-db = client.document_retrieval
+class MongoDB:
+    client: AsyncIOMotorClient = None
 
-async def get_document(doc_id: str):
-    return await db.documents.find_one({"_id": doc_id})
+db = MongoDB()
 
-async def store_document(document: dict):
-    return await db.documents.insert_one(document)
+async def connect_to_mongo():
+    db.client = AsyncIOMotorClient(settings.MONGODB_URL)
+
+async def close_mongo_connection():
+    db.client.close()
+
+async def get_mongodb():
+    return db.client
