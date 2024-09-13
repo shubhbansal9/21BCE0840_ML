@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+motor
+pinecone-client
+redis
+sentence-transformers
+scrapy
+pytest
+pytest-asyncio
+httpx
