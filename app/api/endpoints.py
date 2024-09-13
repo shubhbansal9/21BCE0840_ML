@@ -40,9 +40,9 @@ async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mong
             user = {"_id": user_id, "request_count": 0}
             logger.debug(f"Creating new user entry: {user}")
 
-        if user.get("request_count", 0) >= 5:
-            logger.warning(f"Rate limit exceeded for user: {user_id}")
-            raise HTTPException(status_code=429, detail="Rate limit exceeded")
+        # if user.get("request_count", 0) >= 5:
+        #     logger.warning(f"Rate limit exceeded for user: {user_id}")
+        #     raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
         # Increment user request count
         result = await db.users.update_one(

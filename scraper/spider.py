@@ -35,9 +35,8 @@ async def scrape_and_store_article(session, url):
 
 async def scrape_news():
     news_urls = [
-        "https://example.com/news1",
-        "https://example.com/news2",
-        # Add more news URLs here
+        "https://www.bbc.com/",
+        "https://www.reuters.com/",
     ]
     
     async with aiohttp.ClientSession() as session:
