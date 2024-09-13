@@ -1,17 +1,31 @@
 version: '3.8'
+
 services:
   app:
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - mongo
+      - mongodb
       - redis
-  mongo:
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/docretrieval
+      - REDIS_URL=redis://redis:6379
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+
+  mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
+
+volumes:
+  mongodb_data:

@@ -1,21 +1,11 @@
-import threading
-import schedule
-import time
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
-from .spider import NewsSpider
+import asyncio
+from scraper.spider import scrape_news
 
-def run_spider():
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(NewsSpider)
-    process.start()
-
-def run_scheduler():
-    schedule.every(6).hours.do(run_spider)
+async def run_scraper():
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        await scrape_news()
+        await asyncio.sleep(3600)  # Run every hour
 
-def start_scheduler():
-    scheduler_thread = threading.Thread(target=run_scheduler)
-    scheduler_thread.start()
+def start_scraper():
+    loop = asyncio.get_event_loop()
+    loop.create_task(run_scraper())

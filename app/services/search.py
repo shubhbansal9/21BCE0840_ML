@@ -1,21 +1,20 @@
-from app.api.models import SearchQuery, SearchResult
-from app.db.mongodb import get_document
-from app.db.pinecone import search_similar_documents
+import pinecone
 from app.services.encoder import encode_text
+from app.core.config import settings
 
-async def search_documents(query: SearchQuery) -> List[SearchResult]:
-    query_vector = await encode_text(query.text)
-    similar_docs = await search_similar_documents(
-        query_vector,
-        top_k=query.top_k,
-        threshold=query.threshold
-    )
-    results = []
-    for doc in similar_docs:
-        full_doc = await get_document(doc.id)
-        results.append(SearchResult(
-            id=doc.id,
-            content=full_doc['content'],
-            score=doc.score
-        ))
-    return results
+async def search_documents(query: str, top_k: int, threshold: float):
+    index = pinecone.Index(settings.PINECONE_INDEX_NAME)
+    query_vector = encode_text(query)
+    results = index.query(query_vector, top_k=top_k, include_metadata=True)
+    
+    filtered_results = [
+        {
+            "id": match["id"],
+            "score": match["score"],
+            "metadata": match["metadata"]
+        }
+        for match in results["matches"]
+        if match["score"] >= threshold
+    ]
+    
+    return filtered_results
