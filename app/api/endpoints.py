@@ -25,7 +25,7 @@ async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mong
 
         user = await db.users.find_one({"_id": user_id})
         logger.debug(f"User found: {user}")
-
+        
         if user is None:
             logger.warning(f"User not found: {user_id}")
             user = {"_id": user_id, "request_count": 0}
@@ -40,7 +40,6 @@ async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mong
             upsert=True
         )
         logger.debug(f"User request count updated: {result.raw_result}")
-
     except Exception as e:
         logger.error(f"Error querying or updating user: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")

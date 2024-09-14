@@ -10,7 +10,7 @@ pc = Pinecone(api_key=settings.PINECONE_API_KEY)
 if settings.PINECONE_INDEX_NAME not in pc.list_indexes().names():
     pc.create_index(
         name=settings.PINECONE_INDEX_NAME,
-        dimension=384, 
+        dimension=786, 
         metric='cosine', 
         spec=ServerlessSpec(
             cloud='aws',
@@ -21,7 +21,7 @@ if settings.PINECONE_INDEX_NAME not in pc.list_indexes().names():
 from app.db.pinecone import connect_to_pinecone
 
 
-async def search_documents(text: str, top_k: int = 5, threshold: float = 0.1):
+async def search_documents(text: str, top_k: int = 5, threshold: float = 0.05):
     pinecone_index = connect_to_pinecone()
     query_vector = encode_text(text)
     results = pinecone_index.query(

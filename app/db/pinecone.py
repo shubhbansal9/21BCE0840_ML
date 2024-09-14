@@ -8,7 +8,7 @@ def connect_to_pinecone():
     if settings.PINECONE_INDEX_NAME not in pc.list_indexes().names():
         pc.create_index(
             name=settings.PINECONE_INDEX_NAME, 
-            dimension=384,  
+            dimension=768,  
             metric='cosine', 
             spec=ServerlessSpec(
                 cloud='aws',
