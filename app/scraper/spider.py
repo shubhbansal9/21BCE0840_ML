@@ -34,7 +34,6 @@ async def parse_article(html):
     content = ' '.join([p.text for p in soup.find_all('p') if len(p.text.split()) > 20])
     return title, content
 
-sem = asyncio.Semaphore(5)
 
 async def scrape_and_store_article(session, url, pinecone_index):
     try:
@@ -48,10 +47,10 @@ async def scrape_and_store_article(session, url, pinecone_index):
             logger.warning(f"Insufficient content for {url}")
             return
         db = await get_mongodb()
-        existing_article = await db.articles.find_one({"url": url})
-        if existing_article:
-            logger.info(f"Article already exists in MongoDB for URL: {url}")
-            return
+        # existing_article = await db.articles.find_one({"url": url})
+        # if existing_article:
+        #     logger.info(f"Article already exists in MongoDB for URL: {url}")
+        #     return
 
         article_id = await db.articles.insert_one({
             "url": url,
@@ -69,10 +68,12 @@ async def scrape_and_store_article(session, url, pinecone_index):
 async def scrape_news():
     news_urls = [
         "https://www.bbc.com/news",
-        "https://www.reuters.com/world/",
         "https://news.mit.edu/topic/machine-learning",
         "https://www.nature.com/natmachintell/",
         "https://techcrunch.com/",
+        "https://www.newyorker.com/tag/black-lives-matter",
+        "https://www.nasa.gov/missions/artemis/artemis-iii/",
+        "https://www.economist.com/climate-change",
     ]
     
     pinecone_index = connect_to_pinecone()
