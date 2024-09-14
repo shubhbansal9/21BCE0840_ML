@@ -19,7 +19,7 @@ async def startup():
 
 async def run_scraper():
     try:
-        await scrape_news()  # Assuming scrape_news is now an async function
+        await scrape_news() 
         logger.info("Scraping completed successfully")
     except Exception as e:
         logger.error(f"Error during scraping: {str(e)}")

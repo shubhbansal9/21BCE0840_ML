@@ -29,8 +29,7 @@ async def search_documents(text: str, top_k: int = 5, threshold: float = 0.1):
         top_k=top_k,
         include_metadata=True
     )
-    
-    # Filter results based on threshold and format the output
+
     filtered_results = [
         {
             "id": match['id'],
