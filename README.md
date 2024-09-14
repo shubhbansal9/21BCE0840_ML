@@ -1,12 +1,6 @@
-<p align="center">
-  <h1>📚 Document Retrieval System</h1>
-</p>
+# 📚 Document Retrieval System
 
-<p align="center">
-  <img src="assets/images/project-header.jpg" alt="Project Header">
-</p>
-
-
+![Project Header](assets/images/project-header.png)
 ## 📋 Table of Contents
 1. [Project Overview](#-project-overview)
 2. [Features](#-features)
