@@ -10,75 +10,78 @@ import time
 
 router = APIRouter()
 
-@router.get("/health")
-async def health_check():
-    return {"status": "healthy"}
 
-@router.post("/search", response_model=SearchResponse)
-async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+@router.post("/search")
+async def search(request: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+  
+
     start_time = time.time()
 
-    # Debug logging
-    logger.debug(f"DB object type: {type(db)}")
-    logger.debug(f"Search query received: {query.dict()}")
-
-
-    user_id = query.user_id
+    # Rate Limit Check (Improved)
     try:
+        user_id = request.user_id
         if not isinstance(user_id, ObjectId):
-            logger.debug(f"Converting user_id to ObjectId: {user_id}")
             user_id = ObjectId(user_id)
 
-        user = await db.users.find_one({"_id": user_id})
-        logger.debug(f"User found: {user}")
+        await check_rate_limit(db, user_id)  # Call separate function for clarity
 
+    except (HTTPException, Exception) as e:
+        logger.error(f"Error performing rate limit check: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    # Cache Handling
+    cache_key = f"search:{request.text}:{request.top_k}:{request.threshold}"
+    cached_results = cache.get(cache_key)
+
+    if cached_results:
+        logger.debug(f"Cache hit for: {cache_key}")
+        results = eval(cached_results)  # Assuming results are JSON-encoded
+    else:
+        logger.debug("Cache miss")
+        try:
+            results = await search_documents(request.text, request.top_k, request.threshold)
+            cache.set(cache_key, results)  # Cache the retrieved results
+            logger.debug(f"Results cached with key: {cache_key}")
+        except Exception as e:
+            logger.error(f"Error performing search: {str(e)}")
+            raise HTTPException(status_code=500, detail="Search operation failed")
+
+    # Return Detailed Response
+    end_time = time.time()
+    inference_time = end_time - start_time
+
+    logger.info(f"Search completed. User: {user_id}, Query: {request.text}, "
+                f"Time: {inference_time:.2f}s")
+
+    return {
+        "query": request.text,
+        "results": results,
+        "total_results": len(results),
+        "inference_time": inference_time,
+    }
+
+
+async def check_rate_limit(db: AsyncIOMotorDatabase, user_id: ObjectId):
+ 
+
+    try:
+        user = await db.users.find_one({"_id": user_id})
         if user is None:
-            logger.warning(f"User not found: {user_id}")
-            
             user = {"_id": user_id, "request_count": 0}
-            logger.debug(f"Creating new user entry: {user}")
+            await db.users.insert_one(user)  # Create new user entry
 
         if user.get("request_count", 0) >= 5:
-            logger.warning(f"Rate limit exceeded for user: {user_id}")
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
         # Increment user request count
-        result = await db.users.update_one(
-            {"_id": user_id},
-            {"$inc": {"request_count": 1}},
-            upsert=True
-        )
-        logger.debug(f"User request count updated: {result.raw_result}")
+        await db.users.update_one({"_id": user_id}, {"$inc": {"request_count": 1}})
 
     except Exception as e:
         logger.error(f"Error querying or updating user: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-    # Check cache
-    cache_key = f"search:{query.text}:{query.top_k}:{query.threshold}"
-    logger.debug(f"Cache key: {cache_key}")
-    cached_result = cache.get(cache_key)
-    if cached_result:
-        logger.debug(f"Cache hit: {cached_result}")
-        return cached_result
-    else:
-        logger.debug("Cache miss")
 
-    # Perform search
-    try:
-        results = await search_documents(query.text, query.top_k, query.threshold)
-        logger.debug(f"Search results: {results}")
-    except Exception as e:
-        logger.error(f"Error performing search: {str(e)}")
-        raise HTTPException(status_code=500, detail="Search operation failed")
+def cache_results(text: str, results):
 
-    # Cache results
-    cache.set(cache_key, results)
-    logger.debug(f"Results cached with key: {cache_key}")
-
-    end_time = time.time()
-    inference_time = end_time - start_time
-
-    logger.info(f"Search completed. User: {user_id}, Query: {query.text}, Time: {inference_time:.2f}s")
-
-    return SearchResponse(results=results, inference_time=inference_time)
+    # Assuming results are JSON-encodable (validation or conversion might be needed)
+    cache.set(f"search:{text}", results)
