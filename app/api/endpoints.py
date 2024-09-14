@@ -42,12 +42,12 @@ async def search(query: SearchQuery, db: AsyncIOMotorDatabase = Depends(get_mong
         result = await db.users.update_one(
             {"_id": user_id},
             {"$inc": {"request_count": 1}},
-            upsert=Trues
+            upsert=True
         )
         logger.debug(f"User request count updated successfully: {result.raw_result}")
     except Exception as e:
         logger.error(f"Error while querying or updating user data: {str(e)}")
-        raise HTTPException(status_code=500, detail="Rate limit check")
+        raise HTTPException(status_code=500, detail="Rate limit exceeded")
 
     # Check cache for previous results
     cache_key = f"search:{query.text}:{query.top_k}:{query.threshold}"
