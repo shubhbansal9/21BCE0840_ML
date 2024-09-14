@@ -9,6 +9,9 @@ from bson.objectid import ObjectId
 import time
 
 router = APIRouter()
+@router.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 
 @router.post("/search", response_model=SearchResponse)
