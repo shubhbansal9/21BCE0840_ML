@@ -15,5 +15,5 @@ async def close_mongo_connection():
 
 
 async def get_mongodb() -> AsyncIOMotorDatabase:
-    client = AsyncIOMotorClient("mongodb+srv://shubhbansal44:Shubhboss123$@cluster0.frhp8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
     return client.db
