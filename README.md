@@ -216,7 +216,8 @@ This section presents the actual testing results of our Document Retrieval Syste
 }
 ```
 - Postman screenshot
-![Testing Results 1](assets/images/testing-1.png)
+
+  ![Testing Results 1](assets/images/testing-1.png)
 
 
 #### 2.2 Search Query Example 2
@@ -234,7 +235,8 @@ This section presents the actual testing results of our Document Retrieval Syste
 }
 ```
 - Postman screenshot
-![Testing Results 2](assets/images/testing-2.png)
+
+  ![Testing Results 2](assets/images/testing-2.png)
 
 ### 3. Rate Limiting Test
 
