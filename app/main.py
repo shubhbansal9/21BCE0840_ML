@@ -3,22 +3,18 @@ from app.api.endpoints import router as api_router
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.db.pinecone import connect_to_pinecone, close_pinecone_connection
-from app.scraper.spider import scrape_news  # Import scrape_news instead of start_scraping
+from app.scraper.spider import scrape_news  
 import uvicorn
 import asyncio
 import logging
 
 app = FastAPI(title=settings.PROJECT_NAME)
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def startup():
     await connect_to_mongo()
     connect_to_pinecone()
-    
-    # Run scraping in the background
     asyncio.create_task(run_scraper())
 
 async def run_scraper():
