@@ -1,6 +1,5 @@
 # 📚 Document Retrieval System
 
-![Project Header](assets/images/project-header.png)
 ## 📋 Table of Contents
 1. [Project Overview](#-project-overview)
 2. [Features](#-features)
